@@ -1,0 +1,67 @@
+﻿@model WebApplication1.Models.ViewModels.ReservationViewModel;
+@inject IHttpContextAccessor HttpContextAccessor;
+
+@{
+	ViewData["Title"] = "Reservation Page";
+	ViewData["Facilities"] = TempData["Facilities"]; 
+	Layout = HttpContextAccessor.HttpContext.Session.GetString("Layout") as string;
+	var user = HttpContextAccessor.HttpContext.Session.GetString("UserID");
+
+	if(int.TryParse(user, out int UserID)){ }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+	<h3>Create Reservation</h3>
+
+	<form id="Reservation" asp-action="Create" method="post">
+		<input type="hidden" class="form-control" asp-for="UserID" value="@UserID.ToString()">
+		<input type="hidden" class="form-control" asp-for="RequestDateTime" id="requestDateTime">
+
+		<div class="form-group">
+			<label for="ReserveDate">Date</label>
+			<input type="date" class="form-control" asp-for="ReserveDate" >
+		</div>
+
+		<div class="form-group">
+			<label for="ReserveTimeStart">Start</label>
+			<input type="time" class="form-control" asp-for="ReserveTimeStart">
+		</div>
+
+		<div class="form-group">
+			<label for="ReserveTimeEnd">End</label>
+			<input type="time" class="form-control" asp-for="ReserveTimeEnd">
+		</div>
+
+		<div class="form-group">
+			<label for="FacilityID">Facility Name</label>
+			<select asp-for="FacilityID" asp-items="ViewBag.Facilities" class="form-control">
+				<option value="">--Please select a Facility--</option>
+			</select>
+		</div>
+
+		<div class="form-group">
+			<label for="Purpose">Purpose</label>
+			<input type="text" class="form-control" asp-for="Purpose">
+		</div>
+
+		<button type="submit" class="btn btn-primary">Submit</button>
+	</form>
+
+	@if(ViewData.ModelState[""]?.Errors.Count > 0)
+	{	
+		@foreach(var error in ViewData.ModelState[""].Errors)
+		{
+			<div class="alert alert-danger">@error.ErrorMessage</div>
+		}
+	}
+
+	<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

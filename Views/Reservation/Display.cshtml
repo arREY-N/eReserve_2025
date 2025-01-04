@@ -1,0 +1,100 @@
+﻿@model List<WebApplication1.Models.Reservation>;
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Reservations Page";
+    Layout = HttpContextAccessor.HttpContext.Session.GetString("Layout");
+    var user = HttpContextAccessor.HttpContext.Session.GetString("UserID");
+    var designation = HttpContextAccessor.HttpContext.Session.GetString("DesignationID");
+
+    if (int.TryParse(user, out int UserID)) { }
+    if (int.TryParse(designation, out int DesignationID)) { }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+    <h3>Reservations</h3>
+
+    <br />
+    
+    <form asp-controller="Reservation" asp-action="Create" method="get">
+        <input type="hidden" name="UserID" value="@UserID" />
+        <button type="submit" class="btn btn-primary">Create New Reservation</button>
+    </form>
+
+    <br />
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Request Date</th>
+                <th>Reserved Date</th>
+                <th>Time Start</th>
+                <th>Time End</th>
+                <th>Facility</th>
+                <th>Purpose</th>
+                <th>Requested By</th>
+                <th>Status</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model != null)
+            {
+                @foreach (var reservation in Model)
+                {
+                    <tr>
+                        <td>@reservation?.RequestDateTime.ToString("MMMM dd, yyyy")</td>
+                        <td>@reservation?.ReserveDate.ToString("MMMM dd, yyyy")</td>
+                        <td>
+                            @{
+                                var startTime = (reservation!.ReserveDate + reservation.ReserveTimeStart).ToString("hh:mm tt");
+                            }
+                            @startTime
+                        </td>
+                        <td>
+                            @{
+                                var endTime = (reservation.ReserveDate + reservation.ReserveTimeEnd).ToString("hh:mm tt");
+                            }
+                            @endTime
+                        </td>
+                        <td>@reservation.Facility!.FacilityName</td>
+                        <td>@reservation.Purpose</td>
+                        <td>@reservation.User!.Username</td>
+                        <td>@reservation.Status</td>
+                        <td>
+                            <form asp-action="Edit" method="get">
+                                <input type="hidden" name="RequestID" value="@reservation.RequestID" />
+                                <input type="hidden" name="UserID" value="@UserID" />
+                                @if(reservation.Status != "Approved" || DesignationID == 1)
+                                {
+                                    <button type="submit" class="btn btn-primary">Edit</button>
+                                } 
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary" disabled>Edit</button>
+                                }
+                            </form>
+
+                        </td>
+                        <td>
+                            <form asp-action="Delete" method="post">
+                                <input type="hidden" name="RequestID" value="@reservation.RequestID" />
+                                <input type="hidden" name="UserID" value="@UserID" />
+                                <button type="submit" class="btn btn-danger" value="Delete">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</body>
+</html>

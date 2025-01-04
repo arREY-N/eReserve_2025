@@ -1,0 +1,177 @@
+public async Task<IActionResult> Test(List<Reservation> reservationList, Reservation reservation, UserViewModel userViewModel)
+		{
+            TimeBlock currentTimeBlock = new TimeBlock(reservation.ReserveTimeStart, reservation.ReserveTimeEnd);
+
+            if (reservationList.Any())
+            {
+                if (Utility.CheckTimeBlocks(reservationList, currentTimeBlock) == true)
+                {
+                    Console.WriteLine("Valid edit");
+                    Console.WriteLine("Request ID: " + reservation.RequestID);
+
+                    EditReservation(reservation);
+                    return RedirectToAction("Display", new { UserID = reservation.UserID });
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Reservation");
+                    Console.WriteLine("Request ID: " + reservation.RequestID);
+
+                    var facilities = await _context.Facilities.Where(f => f.Status != "Unavailable").ToListAsync();
+
+                    userViewModel.Facilities = facilities.Select(f => new SelectListItem
+                    {
+                        Value = f.FacilityID.ToString(),
+                        Text = f.FacilityName
+                    }).ToList();
+
+                    ModelState.AddModelError(string.Empty, "Choose another schedule");
+
+                    userViewModel.SetLayout();
+                    return View("Edit", userViewModel);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Valid edit");
+                Console.WriteLine("Request ID: " + reservation.RequestID);
+
+                EditReservation(reservation);
+
+                return RedirectToAction("Display", new { UserID = reservation.UserID });
+            }
+        }
+
+
+[HttpPost]
+		public async Task<IActionResult> Create(ReservationViewModel reservationViewModel)
+		{
+			if ((!string.IsNullOrEmpty(Request.Form["ReserveTimeStart"])) && (!string.IsNullOrEmpty(Request.Form["ReserveTimeEnd"])))
+            {
+				reservationViewModel.ReserveTimeStart = TimeSpan.Parse(Request.Form["ReserveTimeStart"]!);
+                reservationViewModel.ReserveTimeEnd = TimeSpan.Parse(Request.Form["ReserveTimeEnd"]!);
+            }
+
+			if (ModelState.IsValid)
+			{
+				var reservationList = await _context!.Reservations
+													.Where(f => f.FacilityID == reservationViewModel.FacilityID 
+																&& (f.ReserveDate == reservationViewModel.ReserveDate 
+																))
+													.Include(f => f.Facility)
+													.OrderBy(t => t.ReserveTimeStart)
+													.ToListAsync();
+
+				var reservation = new Reservation
+				{
+					RequestDateTime = reservationViewModel.RequestDateTime,
+					ReserveDate = reservationViewModel.ReserveDate,
+					ReserveTimeStart = reservationViewModel.ReserveTimeStart,
+					ReserveTimeEnd = reservationViewModel.ReserveTimeEnd,
+					Purpose = reservationViewModel.Purpose,
+					FacilityID = reservationViewModel.FacilityID,
+					UserID = reservationViewModel.UserID,
+					User = await _context.Users.FirstOrDefaultAsync(u => u.UserID == reservationViewModel.UserID)
+				};
+				
+				if (reservationList.Any())
+				{
+					TimeBlock checkTimeBlock = new TimeBlock(reservationViewModel.ReserveTimeStart, reservationViewModel.ReserveTimeEnd);
+					if(Utility.CheckTimeBlocks(reservationList, checkTimeBlock) == true)
+					{
+						_context.Reservations.Add(reservation);
+						await _context.SaveChangesAsync();
+					
+						Console.WriteLine("Valid Reservation");
+						Console.WriteLine("User ID: " + reservation.User?.UserID);
+
+						return RedirectToAction("Display", new { UserID = reservationViewModel.UserID });
+					} 
+					else
+					{
+						Console.WriteLine("Invalid Reservation");
+						Console.WriteLine("User ID: " + reservation.User?.UserID);
+						
+						var facilities = await _context.Facilities.Where(f => f.Status != "Unavailable").ToListAsync();
+
+						reservationViewModel.Facilities = facilities.Select(f => new SelectListItem
+						{
+							Value = f.FacilityID.ToString(),
+							Text = f.FacilityName
+						}).ToList();
+
+						ModelState.AddModelError(string.Empty, "Choose another schedule");
+
+						reservationViewModel.SetLayout();
+						return View("Create", reservationViewModel);
+					}
+				}
+				else 
+				{
+					_context.Reservations.Add(reservation);
+					await _context.SaveChangesAsync();
+
+					Console.WriteLine("Valid Reservation");
+					Console.WriteLine("User ID: " + reservation.User?.UserID);
+
+					return RedirectToAction("Display", new { UserID = reservationViewModel.UserID });
+				}
+			} 
+			else
+			{
+				Console.WriteLine("Invalid Reservation");
+				foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+				{
+					Console.WriteLine($"Error: {error.ToString} : {error.ErrorMessage}");
+				}
+			}
+			return View("Display", new { reservationViewModel.UserID });
+		}
+
+[HttpPost]
+        public async Task<IActionResult> EEdit(UserViewModel userViewModel)
+		{
+			if (userViewModel.Reservations != null && userViewModel.Reservations.Count > 0)
+			{
+				Reservation reservation = userViewModel.Reservations[0];
+
+                var reservationList = await _context!.Reservations
+                                                            .Where(f => f.FacilityID == reservation.FacilityID
+                                                                && (f.ReserveDate == reservation.ReserveDate
+                                                                ))
+                                                            .Include(f => f.Facility)
+                                                            .OrderBy(t => t.ReserveTimeStart)
+                                                            .ToListAsync();
+                TimeBlock currentTimeBlock = new TimeBlock(reservation.ReserveTimeStart, reservation.ReserveTimeEnd);
+
+                reservationList.Remove(reservationList.FirstOrDefault(r => r.RequestID == reservation.RequestID)!);
+
+                if (ModelState.IsValid && ((!reservationList.Any()) || (Utility.CheckTimeBlocks(reservationList, currentTimeBlock) == true)))
+                {
+					Console.WriteLine("Valid edit");
+					Console.WriteLine("Request ID: " + reservation.RequestID);
+					
+					EditReservation(reservation);
+					return RedirectToAction("Display", new { UserID = reservation.UserID });
+                } 
+				else
+				{
+                    Console.WriteLine("Invalid Reservation");
+                    Console.WriteLine("Request ID: " + reservation.RequestID);
+
+                    var facilities = await _context!.Facilities.Where(f => f.Status != "Unavailable").ToListAsync();
+
+                    userViewModel.Facilities = facilities.Select(f => new SelectListItem
+                    {
+                        Value = f.FacilityID.ToString(),
+                        Text = f.FacilityName
+                    }).ToList();
+
+                    ModelState.AddModelError(string.Empty, "Choose another schedule");
+
+                    userViewModel.SetLayout();
+                    return View("Edit", userViewModel);
+                }
+            }
+			return View(userViewModel);
+		}

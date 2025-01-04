@@ -1,0 +1,124 @@
+﻿@model WebApplication1.Models.Reservation
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+	ViewData["Title"] = "Edit Page";
+	ViewData["Facilities"] = TempData["Facilities"];
+	Layout = HttpContextAccessor.HttpContext.Session.GetString("Layout");
+	var user = HttpContextAccessor.HttpContext.Session.GetString("UserID");
+	var designation = HttpContextAccessor.HttpContext.Session.GetString("DesignationID");
+
+	if (int.TryParse(user, out int UserID)) { }
+	if (int.TryParse(designation, out int DesignationID)) { }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+	<h3>Edit Reservation</h3>
+
+	<form id="Reservation" asp-action="Edit" method="post" onsubmit="return ValidateForm(this)">
+		<input type="hidden" asp-for="RequestID" readonly/>
+		<input type="hidden" asp-for="UserID" value="@Model.UserID" readonly/>
+		<input type="hidden" asp-for="UserID" value="@Model.UserID" readonly/>
+
+		<div class="form-group">
+			<input type="hidden" class="form-control" asp-for="RequestDateTime" id="RequestDateTime" readonly/>
+		</div>
+
+		<div class="form-group">
+			<label for="ReserveDate">Date</label>
+			@if (DesignationID == 1)
+			{
+				<input type="date" class="form-control" asp-for="ReserveDate" readonly />
+			}
+			else
+			{
+				<input type="date" class="form-control" asp-for="ReserveDate" />
+			}
+		</div>
+
+		<div class="form-group">
+			<label for="ReserveTimeStart">Start</label>
+			@if (DesignationID == 1)
+			{
+				<input type="time" class="form-control" asp-for="ReserveTimeStart" readonly>
+			}
+			else
+			{
+				<input type="time" class="form-control" asp-for="ReserveTimeStart">
+			}
+		</div>
+
+		<div class="form-group">
+			<label for="ReserveTimeEnd">End</label>
+			@if (DesignationID == 1)
+			{
+				<input type="time" class="form-control" asp-for="ReserveTimeEnd" readonly>
+			}
+			else
+			{
+				<input type="time" class="form-control" asp-for="ReserveTimeEnd">
+			}
+		</div>
+
+		<div class="form-group">
+			<label for="FacilityID">Facility Name</label>
+			@if (DesignationID == 1)
+			{
+				<select asp-for="FacilityID" asp-items="ViewBag.Facilities" class="form-control" disabled>
+					<option value="">--Please select a Facility--</option>
+				</select>
+				<input type="hidden" asp-for="FacilityID" />
+			}
+			else
+			{
+				<select asp-for="FacilityID" asp-items="ViewBag.Facilities" class="form-control">
+					<option value="">--Please select a Facility--</option>
+				</select>
+			}
+		</div>
+
+		<div class="form-group">
+			<label for="Purpose">Purpose</label>
+			@if (DesignationID == 1)
+			{
+				<input type="text" class="form-control" asp-for="Purpose" readonly>
+			}
+			else
+			{
+				<input type="text" class="form-control" asp-for="Purpose">
+			}
+		</div>
+
+		@if(DesignationID == 1)
+		{
+			<div class="form-group">
+				<label for="Status">Status</label>
+				<select asp-for="Status" class="form-control">
+					<option value="Pending">Pending</option>
+					<option value="Approved">Approved</option>
+					<option value="Rejected">Rejected</option>
+				</select>
+			</div>
+		}
+
+		<button type="submit" class="btn btn-primary">Submit</button>
+		<button class="btn btn-danger" type="button" onclick="window.history.back();">Cancel</button>
+	</form>
+
+	@if (ViewData.ModelState[""]?.Errors.Count > 0)
+	{
+		@foreach (var error in ViewData.ModelState[""].Errors)
+		{
+			<div class="alert alert-danger">@error.ErrorMessage</div>
+		}
+	}
+	<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

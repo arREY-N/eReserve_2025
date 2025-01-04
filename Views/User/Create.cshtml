@@ -1,0 +1,68 @@
+﻿@model WebApplication1.Models.User;
+
+@{
+	ViewData["Title"] = "User Page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+	<h3>Create User</h3>
+
+	<form id="User" asp-action="Create" method="post" onsubmit="return ValidateForm(this)">
+		<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+		<input type="hidden" asp-for="UserID" />
+
+		<div class="form-group">
+			<label for="Username">Username</label>
+			<input type="text" class="form-control" asp-for="Username" required/>
+		</div>
+
+		<div class="form-group">
+			<label for="Password">Password</label>
+			<input type="password" class="form-control" asp-for="Password" required/>
+		</div>
+
+		<div class="form-group">
+			<label for="FirstName">First Name</label>
+			<input type="text" class="form-control" asp-for="FirstName" required />
+		</div>
+
+		<div class="form-group">
+			<label for="MiddleName">Middle Name</label>
+			<input type="text" class="form-control" asp-for="MiddleName" required />
+		</div>
+
+		<div class="form-group">
+			<label for="LastName">Last Name</label>
+			<input type="text" class="form-control" asp-for="LastName" required />
+		</div>
+
+		<div class="form-group">
+			<label for="DesignationID">Designation</label>
+			<select asp-for="DesignationID" asp-items="ViewBag.Designations" class="form-control" required>
+				<option value="">--Please select a designation--</option>
+			</select>
+		</div>
+		
+		<div class="form-group">
+			<label for="UserNumber">User Number</label>
+			<input type="number" class="form-control" asp-for="UserNumber" required />
+		</div>
+
+		<div class="form-group">
+			<label for="UserEmail">Email</label>
+			<input type="email" class="form-control" asp-for="UserEmail" required />
+		</div>
+
+		<button type="submit" class="btn btn-primary">Submit</button>
+	</form>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

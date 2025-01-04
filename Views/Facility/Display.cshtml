@@ -1,0 +1,63 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor;
+
+@{
+    ViewData["Title"] = "Facility Page";
+    Layout = HttpContextAccessor.HttpContext.Session.GetString("Layout");
+    var user = HttpContextAccessor.HttpContext.Session.GetString("UserID");
+
+    if(int.TryParse(user, out int UserID)){ }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+    <h3>Facilities</h3>
+    <input type="hidden" asp-for-UserID="@UserID" value="@UserID" readonly/>
+    
+    <form asp-action="Create" method="get">
+        <button type="submit" class="btn btn-primary">Create New Facility</button>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Facility Name</th>
+                <th>Floor</th>
+                <th>Number</th>
+                <th>Status</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var facility in ViewBag.Facilities)
+            {
+                <tr>
+                    <td>@facility.FacilityName</td>
+                    <td>@facility.Floor</td>
+                    <td>@facility.Number</td>
+                    <td>@facility.Status</td>
+                    <td>
+                        <form asp-action="Edit" method="get">
+                            <input type="hidden" name="FacilityID" value="@facility.FacilityID" />
+                            <button type="submit" class="btn btn-primary">Edit</button>
+                        </form>
+                        
+                    </td>
+                    <td>
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" name="FacilityID" value="@facility.FacilityID" />
+                            <button type="submit" class="btn btn-danger" value="Delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

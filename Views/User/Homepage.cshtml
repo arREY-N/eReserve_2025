@@ -1,0 +1,36 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+	ViewData["Title"] = "Home Page";
+
+	Layout = HttpContextAccessor.HttpContext.Session.GetString("Layout") as string;
+
+	var Username = HttpContextAccessor.HttpContext.Session.GetString("Username");
+	var user = HttpContextAccessor.HttpContext.Session.GetString("UserID"); ;
+
+	if (int.TryParse(user, out int UserID)) { }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+	<div class="text-center">
+		<h1>Welcome to e-Reserve, @Username!</h1>
+		<h2>UserID: @UserID</h2>
+		
+		<hr />
+		
+		<form asp-controller="User" asp-action="LogOut">
+			<button type="submit" class="btn btn-primary">Sign out</button>
+		</form>
+	</div>
+	
+
+	<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

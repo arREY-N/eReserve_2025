@@ -1,0 +1,100 @@
+﻿@model WebApplication1.Models.ViewModels.ScheduleViewModel
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Schedule Page";
+    Layout = HttpContextAccessor.HttpContext.Session.GetString("Layout") ?? "_IndexLayout";
+    var user = HttpContextAccessor.HttpContext.Session.GetString("UserID");
+    var designation = HttpContextAccessor.HttpContext.Session.GetString("DesignationID");
+
+    if (int.TryParse(user, out int UserID)) { }
+    if (int.TryParse(designation, out int DesignationID)) { }
+
+    DateTime Date = DateTime.Now;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - e-Reserve</title>
+</head>
+<body>
+    <h3>Schedule</h3>
+
+    <form asp-controller="Facility" asp-action="DisplaySchedule" class="form-control">
+        <div class="form-group">
+            <label for="FacilityID">Date</label>
+            <input type="date" class="form-control" asp-for="Date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="FacilityID">Facility Name</label>
+            <select class="form-control" asp-for="FacilityID" asp-items="ViewBag.Facilities" required>
+                <option value="">--Please select a Facility--</option>
+            </select>
+        </div>
+        <br />
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Schedule</button>
+        </div>
+
+        <br />
+    </form>
+    
+    <hr />
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Time Start</th>
+                <th>Time End</th>
+                <th>Activity</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model.Schedule != null){
+                @foreach (var timeBlock in Model.Schedule)
+                {
+                    <tr>
+                        <td>
+                            @{
+                                var startTime = (Date.Date + timeBlock.StartTime).ToString("hh:mm tt");
+                            }
+                            @startTime
+                        </td>
+                        <td>
+                            @{
+                                var endTime = (Date.Date + timeBlock.EndTime).ToString("hh:mm tt");
+                            }
+                            @endTime
+                        </td>
+
+                        @if (timeBlock.Reservation != null)
+                        {
+                            <td>@timeBlock.Reservation!.Purpose</td>
+                            <td>@timeBlock.Reservation!.Status</td>
+                        }
+                        else
+                        {
+                            <td>---------</td>
+                            <td>---------</td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    @if (ViewData.ModelState[""]?.Errors.Count > 0)
+    {
+        @foreach (var error in ViewData.ModelState[""].Errors)
+        {
+            <div class="alert alert-danger">@error.ErrorMessage</div>
+        }
+    }
+</body>
+</html>
